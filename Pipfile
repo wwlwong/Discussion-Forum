@@ -7,6 +7,14 @@ name = "pypi"
 alembic = "*"
 sqlalchemy = "==1.4.41"
 ipdb = "*"
+flask = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
+sqlalchemy-serializer = "*"
+flask-restful = "*"
+flask-cors = "*"
+faker = "*"
+flask-bcrypt = "*"
 
 [dev-packages]
 
