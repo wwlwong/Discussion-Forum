@@ -11,13 +11,16 @@ class User(db.Model, SerializerMixin):
     _password_hash = db.Column(db.String)
     email = db.Column(db.String)
     admin = db.Column(db.String, default=False)
+    verified = db.Column(db.String, default=False)
     joined_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     
     posts = db.relationship('Post', backref='user')
+    replies = db.relationship('Reply', backref='user')
 
     serialize_rules = (
         'posts.user',
+        'replies.user',
     )
 
     @hybrid_property
@@ -41,8 +44,35 @@ class Post(db.Model, SerializerMixin):
     __tablename__ = 'posts'
     
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    content = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+    upvotes = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    serialize_rules = (
+        'user.posts',
+    )
+
+    def __repr__(self):
+        return f"\n<Post id={self.id} title={self.title}, user={self.user_id} >"
+
 
 class Reply(db.Model, SerializerMixin):
     __tablename__ = 'replies'
     
-    pass
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    content = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+    likes = db.Column(db.Integer)
+
+    serialize_rules = (
+        'user.replies',
+    )
+
+    def __repr__(self):
+        return f"\n<Reply id={self.id} post={self.post_id}, user={self.user_id} >"
