@@ -10,13 +10,12 @@ class User(db.Model, SerializerMixin):
     username = db.Column(db.String, unique=True)
     _password_hash = db.Column(db.String)
     email = db.Column(db.String)
-    admin = db.Column(db.String, default=False)
     verified = db.Column(db.String, default=False)
     joined_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
-    
     posts = db.relationship('Post', backref='user')
     replies = db.relationship('Reply', backref='user')
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 
     serialize_rules = (
         'posts.user',
@@ -37,18 +36,43 @@ class User(db.Model, SerializerMixin):
         return bcrypt.check_password_hash(
             self._password_hash, password.encode('utf-8'))
 
+    @validates('email')
+    def validate_email(self, key, address):
+        if '@' not in address:
+            raise ValueError("failed simple email validation")
+        return address
+
     def __repr__(self):
-        return f"\n<User id={self.id} username={self.username} email={self.email} admin={self.admin}>"
+        return f"\n<User id={self.id} username={self.username} email={self.email} role={self.role_id}>"
+
+
+class Role(db.Model, SerializerMixin):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    role_name = db.Column(db.String, nullable=False)
+    users = db.relationship('User', backref='role')
+
+    serialize_rules = (
+        'users.role',
+    )
+    
+    def __repr__(self):
+        return f"\n<Role id={self.id} Role={self.role_name}>"
+
+
 
 class Post(db.Model, SerializerMixin):
     __tablename__ = 'posts'
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
+    link = db.Column(db.String)
+    expiry = db.Column(db.String)
+    retailer = db.Column(db.String)
     content = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
-    upvotes = db.Column(db.Integer)
+    upvotes = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     serialize_rules = (
@@ -68,7 +92,7 @@ class Reply(db.Model, SerializerMixin):
     content = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
-    likes = db.Column(db.Integer)
+    likes = db.Column(db.Integer, default=0)
 
     serialize_rules = (
         'user.replies',
