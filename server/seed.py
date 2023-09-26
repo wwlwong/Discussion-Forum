@@ -1,5 +1,5 @@
 from faker import Faker
-from models import User, Post, Reply
+from models import User, Post, Reply, Role
 from config import db, app, bcrypt
 
 faker = Faker()
@@ -81,6 +81,84 @@ with app.app_context():
         db.session.add_all(replies)
         db.session.commit()
 
+
+        roles = []
+
+        user = Role(
+            role_name = 'user'
+        )
+
+        roles.append(user)
+
+        moderator = Role(
+            role_name = 'moderator'
+        )
+
+        roles.append(moderator)
+
+        admin = Role(
+            role_name = 'admin'
+        )
+
+        roles.append(admin)
+
+        db.session.add_all(roles)
+        db.session.commit()
+
+        users = []
+
+        u1 = User(
+            username = 'frugal'
+            email = '93civic@shaw.ca'
+            verified = True
+            role_id = 1
+        )
+        u1.password_hash = 'choledochoduodenostomy'
+
+        user.append(u1)
+
+        u2 = User(
+            username = 'buynowthinklater'
+            email = 'captain@bell.com'
+            verified = True
+            role_id = 1
+        )
+        u2.password_hash = 'duodenocholedochotomy'
+
+        user.append(u2)
+
+        u3 = User(
+            username = 'Eclipse'
+            email = 'homer01@rogers.com'
+            verified = True
+            role_id = 2
+        )
+        u3.password_hash = 'disestablishmentarianism'
+
+        user.append(u3)
+
+        u4 = User(
+            username = 'DealBrowser'
+            email = 'fluidmin@msn.com'
+            verified = True
+            role_id = 1
+        )
+        u4.password_hash = 'electroencephalographically'
+
+        user.append(u4)
+
+        u5 = User(
+            username = 'freeiscool'
+            email = 'phil@hotdeals.com'
+            verified = True
+            role_id = 3
+        )
+        u5.password_hash = 'nonphenomenally'
+
+        user.append(u5)
+
+        db.session.add_all(users)
+        db.session.commit()
 
 
 
