@@ -5,6 +5,7 @@ from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_cors import CORS
+from sqlalchemy.orm import validates
 
 app = Flask(__name__)
 app.secret_key = b'\x9eRJS\x16,k\xb1\xeb\xc4\x9bj\xf5\x84\x1e\xf9'

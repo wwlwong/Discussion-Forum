@@ -1,7 +1,7 @@
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_serializer import SerializerMixin
 
-from config import db, bcrypt
+from config import db, bcrypt, validates
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -15,7 +15,7 @@ class User(db.Model, SerializerMixin):
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     posts = db.relationship('Post', backref='user')
     replies = db.relationship('Reply', backref='user')
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     serialize_rules = (
         'posts.user',
