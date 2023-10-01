@@ -74,6 +74,7 @@ class Post(db.Model, SerializerMixin):
     link = db.Column(db.String)
     expiry = db.Column(db.String)
     retailer = db.Column(db.String)
+    category = db.Column(db.String)
     content = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
