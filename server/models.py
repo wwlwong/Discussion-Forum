@@ -3,11 +3,16 @@ from sqlalchemy_serializer import SerializerMixin
 
 from config import db, bcrypt, validates
 
+post_tag = db.Table('post_tag',
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id')),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'))
+)
+
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True)
+    username = db.Column(db.String, unique=True, nullable=False)
     _password_hash = db.Column(db.String)
     email = db.Column(db.String)
     verified = db.Column(db.String, default=False)
@@ -74,6 +79,7 @@ class Post(db.Model, SerializerMixin):
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     upvotes = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    tagging = db.relationship("Tag", secondary=post_tag, backref='tagged_posts')
 
     serialize_rules = (
         'user.posts',
@@ -82,6 +88,15 @@ class Post(db.Model, SerializerMixin):
     def __repr__(self):
         return f"\n<Post id={self.id} title={self.title}, user={self.user_id} >"
 
+
+class Tag(db.Model, SerializerMixin):
+    __tablename__ = 'tags'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f'<Tag: {self.name}>'
 
 class Reply(db.Model, SerializerMixin):
     __tablename__ = 'replies'
