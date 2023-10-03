@@ -12,10 +12,48 @@ class Homepage(Resource):
     def get(self):
         return 'Welcome to Hot Deals: A discussion forum for all deals'
 
+class Signup(Resource):
+    def post(self):
+        data = request.get_json()
 
+        user = User( 
+            username=data["username"],
+            email=data["email"],
+            role_id = 1
+        )
+        user.password_hash = data['password']
+        try: 
+            db.session.add(user)
+            db.session.commit()
+            session['user_id'] = user.id
+            return user.to_dict(), 201
+        except IntegrityError as e:
+
+            errors = [] # List for collecting all errors
+
+						# Required key to be sent from client
+            required_keys = ['username', 'email', 'password', 'password_confirmation'] 
+
+						# If value is empty string, append message to errors
+            for key in required_keys:
+                if not data[key]:
+                    errors.append(f"{key} is required")
+
+						# If password confirmation does not match provided password, append error message to errors list
+            if data['password'] != data['password_confirmation']:
+                errors.append('Password  confirmation failed')
+         
+                
+            # Check if the error is an IntegrityError or DataError
+            if isinstance(e, (IntegrityError)):
+                for error in e.orig.args:
+                    errors.append(str(error))# Get the error message as a string
+
+            return {'errors': errors}, 422
 
 
 api.add_resource(Homepage, '/', endpoint='/')
+api.add_resource(Signup, '/signup', endpoint='signup')
 
 if __name__ == '__main__':
     app.run(port=4000, debug=True)
