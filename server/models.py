@@ -23,8 +23,8 @@ class User(db.Model, SerializerMixin):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     serialize_rules = (
-        'posts.user',
-        'replies.user',
+        '-posts.user',
+        '-replies.user',
     )
 
     @hybrid_property
@@ -58,7 +58,7 @@ class Role(db.Model, SerializerMixin):
     users = db.relationship('User', backref='role')
 
     serialize_rules = (
-        'users.role',
+        '-users.role',
     )
     
     def __repr__(self):
@@ -83,7 +83,7 @@ class Post(db.Model, SerializerMixin):
     tagging = db.relationship("Tag", secondary=post_tag, backref='tagged_posts')
 
     serialize_rules = (
-        'user.posts',
+        '-user.posts',
     )
 
     def __repr__(self):
@@ -111,7 +111,8 @@ class Reply(db.Model, SerializerMixin):
     likes = db.Column(db.Integer, default=0)
 
     serialize_rules = (
-        'user.replies',
+        '-user.replies',
+        '-post.replies',
     )
 
     def __repr__(self):
