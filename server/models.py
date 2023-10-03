@@ -18,8 +18,8 @@ class User(db.Model, SerializerMixin):
     verified = db.Column(db.String, default=False)
     joined_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
-    posts = db.relationship('Post', backref='user')
-    replies = db.relationship('Reply', backref='user')
+    posts = db.relationship('Post', backref='user', cascade="all, delete-orphan")
+    replies = db.relationship('Reply', backref='user', cascade="all, delete-orphan")
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     serialize_rules = (
@@ -80,6 +80,7 @@ class Post(db.Model, SerializerMixin):
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     upvotes = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    replies = db.relationship("Reply", backref='post', cascade="all, delete-orphan")
     tagging = db.relationship("Tag", secondary=post_tag, backref='tagged_posts')
 
     serialize_rules = (
