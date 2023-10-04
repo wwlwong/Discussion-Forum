@@ -89,12 +89,51 @@ class Logout(Resource):
             return {"message":"User not logged in."}, 401
 
 
+class Tag(Resource):
+    def post(self):
+        if session['user_id']:
+            form_json = request.get_json()
+            
+            new_tag = Tag(
+                name=form_json["name"]
+            )
+            db.session.add(new_tag)
+            db.session.commit()
+
+            response_dict = new_tag.to_dict()
+
+            response = make_response(
+                response_dict,
+                201,
+            )
+            return response
+        return {"Error":"Unauthorized"}, 401
+
+class TagByID(Resource):
+
+    def delete(self, id):
+        if session['user_id'].role_id == 2 or session['user_id'].role_id == 3:
+            tag = Tag.query.filter_by(id=id).first()
+            if not production:
+                return {"error": "Production not found"}, 404
+            db.session.delete(tag)
+            db.session.commit()
+
+            response = make_response("", 204)
+
+            return response 
+        return {"Error":"Unauthorized"}, 401    
+
+
+
 
 api.add_resource(Homepage, '/', endpoint='/')
 api.add_resource(Signup, '/signup', endpoint='signup')
 api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Logout, '/logout', endpoint='logout')
+api.add_resource(Tag, '/tag', endpoint='tag')
+api.add_resource(TagByID, "/tag/<int:id>")
 
 if __name__ == '__main__':
-    app.run(port=4000, debug=True)
+    app.run(port=5555, debug=True)
