@@ -274,7 +274,7 @@ class PostByID(Resource):
                     post.tagging.remove(old_category_tag)
                     post.tagging.append(new_category_tag)
                 else:
-                    setattr(production, attr, request.form[attr])
+                    setattr(post, attr, request.form[attr])
 
             db.session.add(post)
             db.session.commit()
@@ -305,6 +305,40 @@ class PostByID(Resource):
             return response    
         return {"Error":"Unauthorized"}, 401 
 
+class UserByID(Resource):
+
+    def patch (self,id):
+        if session['user_id'] != id:
+            return {"Error":"Unauthorized"}, 401
+        
+        user = User.query.filter(User.id == id).first()
+        if not user:
+            return {"error": "User not found"}, 404
+
+        for attr in request.form:
+            setattr(user, attr, request.form[attr])
+        
+        db.session.add(user)
+        db.session.commit()
+
+        user_dict = user.to_dict()
+
+        response = make_response(user_dict, 200)
+        return response    
+
+    def delete(self, id):
+        admin = User.query.filter(User.id == session['user_id']).first()
+        if admin.role_id != 3:
+            return {"Error":"Unauthorized"}, 401
+        user = User.query.filter(User.id == id).first()
+        if not user:
+            return {"error": "User not found"}, 404
+        db.session.delete(user)
+        db.session.commit()
+
+        response = make_response("", 204)
+
+        return response    
 
 
 api.add_resource(Homepage, '/', endpoint='/')
@@ -317,6 +351,7 @@ api.add_resource(TagByID, "/tag/<int:id>")
 api.add_resource(ReplyByID, '/reply/<int:id>')
 api.add_resource(Post, '/post', endpoint='post')
 api.add_resource(PostByID, '/post/<int:id>')
+api.add_resource(UserByID, '/user/<int:id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
