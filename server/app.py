@@ -175,8 +175,19 @@ class ReplyByID(Resource):
             return response    
         return {"Error":"Unauthorized"}, 401 
 
+class Post(Resource):
+    
+    def get(self):
+        post_list = [p.to_dict() for p in Post.query.all()]
+        response = make_response(
+            post_list,
+            200,
+        )
 
-        
+        return response
+
+    
+
 
 api.add_resource(Homepage, '/', endpoint='/')
 api.add_resource(Signup, '/signup', endpoint='signup')
@@ -186,6 +197,7 @@ api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(Tag, '/tag', endpoint='tag')
 api.add_resource(TagByID, "/tag/<int:id>")
 api.add_resource(ReplyByID, '/reply/<int:id>')
+api.add_resource(Post, '/post', endpoint='post')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
