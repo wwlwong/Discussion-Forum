@@ -186,7 +186,125 @@ class Post(Resource):
 
         return response
 
+    def post(self):
+        json=request.get_json()
+        if session['user_id'] is None:
+            return {"Error":"Unauthorized"}, 401
+        
+        new_reply= Post(
+            title=json.get('title'),
+            link=json.get('link'),
+            expiry=json.get('expiry'),
+            retailer=json.get('retailer'),
+            category=json.get('category'),
+            user_id = session['user_id'],
+            upvotes = 0
+         )
+
+        retailer_tag = Tag.query.filter(Tag.name.lower() == json.get('retailer').lower()).first()
+        if not retailer_tag:
+            retailer_tag = Tag(name = json.get('retailer'))
+            
+        category_tag = Tag.query.filter(Tag.name.lower() == json.get('category').lower()).first()
+
+        new_post.tagging.append(retailer_tag)
+        new_post.tagging.append(category_tag)
+        db.session.add(new_post)
+        try:
+            db.session.commit()
+            return new_post.to_dict()
+        except IntegrityError as e:
+            db.session.rollback()
+            return {"Error":"Unprocessable entity."}, 422   
+
+class PostByID(Resource):
+    def get(self, id):
+        post = Post.query.filter(post.id=id).first()
+        if not post:
+            return {"error": "Post not found"}, 404
+        post_dict = post.to_dict()
+        response = make_response(post_dict, 200)
+        return response
+
+    def post(self, id):
+        json=request.get_json()
+        if session['user_id'] is None:
+            return {"Error":"Unauthorized"}, 401
+
+        new_reply = Reply(
+            content = json.get('content'),
+            post_id = id,
+            user_id = session['user_id'],
+            likes = 0
+        )
+
+        db.session.add(new_reply)
+        db.session.commit()
+
+        reply_dict = new_reply.to_dict()
+
+        response = make_response(reply_dict, 200)
+        return response
+
     
+    def patch(self, id):
+ 
+        user = User.query.filter(User.id == session['user_id']).first() 
+        if user:
+            if user.role_id == 1:
+                post = Post.query.filter(Post.id=id, Post.user_id == session['user_id']).first()
+
+            if user.role_id == 2 or user.role_id == 3:
+                post = Post.query.filter(Post.id=id).first()
+            
+            if not post:
+                return {"error": "Post not found"}, 404
+
+            for attr in request.form:
+                if attr == 'retailer':
+                    old_retailer_tag = Tag.query.filter(Tag.name.lower() == post.retailer.lower())
+                    new_retailer_tag = Tag.query.filter(Tag.name.lower() == request.form['retailer'])
+                    if not new_retailer_tag:
+                        new_retailer_tag = Tag(name = request.form['retailer'])
+                    post.tagging.remove(old_retailer_tag)
+                    post.tagging.append(new_retailer_tag)
+                elif attr == 'category':
+                    old_category_tag = Tag.query.filter(Tag.name == post.category)
+                    new_category_tag = Tag.query.filter(Tag.name == request.form['category'])
+                    post.tagging.remove(old_category_tag)
+                    post.tagging.append(new_category_tag)
+                else:
+                    setattr(production, attr, request.form[attr])
+
+            db.session.add(post)
+            db.session.commit()
+
+            post_dict = post.to_dict()
+
+            response = make_response(post_dict, 200)
+            return response    
+
+        return {"Error":"Unauthorized"}, 401
+
+    def delete(self, id):
+        if session['user_id']:
+            user = User.query.filter(User.id == session['user_id']).first()
+            if user.role_id == 2 or user.role_id == 3:
+                post = Post.query.filter(Post.id=id).first()
+            else:
+                post = Post.query.filter(Post.id=id, Post.user_id = user.id).first()
+
+            if not post:
+                return {"error": "Post not found"}, 404
+
+            db.session.delete(post)
+            db.session.commit()
+
+            response = make_response("", 204)
+
+            return response    
+        return {"Error":"Unauthorized"}, 401 
+
 
 
 api.add_resource(Homepage, '/', endpoint='/')
@@ -198,6 +316,7 @@ api.add_resource(Tag, '/tag', endpoint='tag')
 api.add_resource(TagByID, "/tag/<int:id>")
 api.add_resource(ReplyByID, '/reply/<int:id>')
 api.add_resource(Post, '/post', endpoint='post')
+api.add_resource(PostByID, '/post/<int:id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
