@@ -112,10 +112,11 @@ class Tag(Resource):
 class TagByID(Resource):
 
     def delete(self, id):
-        if session['user_id'].role_id == 2 or session['user_id'].role_id == 3:
+        user = User.query.filter(User.id == session['user_id']).first() 
+        if user.role_id == 2 or user.role_id == 3:
             tag = Tag.query.filter_by(id=id).first()
-            if not production:
-                return {"error": "Production not found"}, 404
+            if not tag:
+                return {"error": "Tag not found"}, 404
             db.session.delete(tag)
             db.session.commit()
 
@@ -125,7 +126,57 @@ class TagByID(Resource):
         return {"Error":"Unauthorized"}, 401    
 
 
+class ReplyByID(Resource):
 
+    def patch(self, id):
+        user = User.query.filter(User.id == session['user_id']).first() 
+        if user:
+            if user.role_id == 1:
+                reply = Reply.query.filter(Reply.id=id, Reply.user_id == session['user_id']).first()
+                if not reply:
+                return {"error": "Reply not found"}, 404
+            if user.role_id == 2 or user.role_id == 3:
+                reply = Reply.query.filter(Reply.id=id).first()
+                if not reply:
+                    return {"error": "Reply not found"}, 404
+
+            for attr in request.form:
+                setattr(reply, attr, request.form[attr])
+
+            db.session.add(reply)
+            db.session.commit()
+
+            reply_dict = reply.to_dict()
+
+            response = make_response(reply_dict, 200)
+            return response
+        
+        return {"Error":"Unauthorized"}, 401 
+
+
+    def delete(self,id):
+        
+        user = User.query.filter(User.id == session['user_id']).first() 
+        if user:
+            if user.role_id == 1:
+                reply = Reply.query.filter(Reply.id=id, Reply.user_id == session['user_id']).first()
+
+            if user.role_id == 2 or user.role_id == 3:
+                reply = Reply.query.filter(Reply.id=id).first()
+            
+            if not reply:
+                return {"error": "Reply not found"}, 404
+
+            db.session.delete(reply)
+            db.session.commit()
+
+            response = make_response("", 204)
+
+            return response    
+        return {"Error":"Unauthorized"}, 401 
+
+
+        
 
 api.add_resource(Homepage, '/', endpoint='/')
 api.add_resource(Signup, '/signup', endpoint='signup')
@@ -134,6 +185,7 @@ api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(Tag, '/tag', endpoint='tag')
 api.add_resource(TagByID, "/tag/<int:id>")
+api.add_resource(ReplyByID, '/reply/<int:id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
