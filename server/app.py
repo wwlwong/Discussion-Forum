@@ -191,7 +191,7 @@ class Post(Resource):
         if session['user_id'] is None:
             return {"Error":"Unauthorized"}, 401
         
-        new_reply= Post(
+        new_post= Post(
             title=json.get('title'),
             link=json.get('link'),
             expiry=json.get('expiry'),
@@ -205,7 +205,7 @@ class Post(Resource):
         if not retailer_tag:
             retailer_tag = Tag(name = json.get('retailer'))
             
-        category_tag = Tag.query.filter(Tag.name.lower() == json.get('category').lower()).first()
+        category_tag = Tag.query.filter(Tag.name == json.get('category')).first()
 
         new_post.tagging.append(retailer_tag)
         new_post.tagging.append(category_tag)
