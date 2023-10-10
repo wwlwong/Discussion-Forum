@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 
-const Reply = ({reply}) => {
+const Reply = ({reply, onDeleteReply, onEditReply}) => {
     const {id, content, created_at, updated_at} = reply;
+
+    function handleDeleteReplyClick(){
+        onDeleteReply(id);
+    }
+
+    function handleEditReplyClick(){
+        onEditReply(id);
+    }
 
     return (
         <div>
