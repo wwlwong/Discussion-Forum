@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 const NewPostForm = ({ addPost }) => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const [postData, setPostData] = useState({
     title: "",
     link: "",
@@ -33,7 +33,7 @@ const NewPostForm = ({ addPost }) => {
       if (res.ok) {
         res.json().then((post) => {
           addPost(post);
-          navigate(`/post/${post.id}`);
+          history(`/post/${post.id}`);
         });
       }
     });
