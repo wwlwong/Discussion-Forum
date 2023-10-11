@@ -3,7 +3,7 @@ import { Formik, Field, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
  
-const Login = ({user, handleAccount}) => {
+const Login = ({user, updateUser}) => {
   const [errorPage, setErrorPage] = useState("");
   const history = useHistory();
   const formik = useFormik({
@@ -28,7 +28,7 @@ const Login = ({user, handleAccount}) => {
           if (res.ok) {
             setErrorPage("Successfully logged in");
             res.json().then((user) => {
-              handleAccount(user);
+              updateUser(user);
             });
             history.push(`/home`);
           } else if (res.status === 422) {

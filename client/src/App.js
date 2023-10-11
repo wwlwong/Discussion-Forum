@@ -8,7 +8,7 @@ import NewPostForm from "./components/NewPostForm/NewPostForm";
 import PostDetail from "./components/PostDetail/PostDetail";
 
 function App() {
-  const [productions, setProductions] = useState([]);
+  const [post, setPost] = useState([]);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -16,10 +16,10 @@ function App() {
     // fetchProductions()
   }, []);
 
-  const fetchProductions = () => {
-    fetch("/productions")
+  const fetchPost = () => {
+    fetch("/post")
       .then((res) => res.json())
-      .then(setProductions);
+      .then(setPost);
   };
 
   const fetchUser = () => {
@@ -30,8 +30,8 @@ function App() {
     */
   };
 
-  const addProduction = (production) =>
-    setProductions((current) => [...current, production]);
+  const addPost = (post) =>
+    setPost((current) => [...current, post]);
 
   const updateUser = (user) => setUser(user);
 
@@ -46,19 +46,27 @@ function App() {
       <Navigation updateUser={updateUser}/>
       <Routes>
         <Route
-          path={"/productions/new"}
+          path={"/post/new"}
           element={
             <div>
-              <NewProductionForm addProduction={addProduction} />
+              <NewPostForm addPost={addPost} />
             </div>
           }
         />
-        <Route path={"/productions/:id"} element={<ProductionDetail />} />
+        <Route path={"/post/:id"} element={<PostDetail />} />
         <Route
-          path={"/authentication"}
+          path={"/signup"}
           element={
             <div>
-              <Authentication updateUser={updateUser}/>
+              <Signup updateUser={updateUser}/>
+            </div>
+          }
+        />
+        <Route
+          path={"/login"}
+          element={
+            <div>
+              <Login updateUser={updateUser}/>
             </div>
           }
         />
@@ -66,7 +74,7 @@ function App() {
           path={"/"}
           element={
             <div>
-              <Home productions={productions} />
+              <Home post={post} />
             </div>
           }
         />
