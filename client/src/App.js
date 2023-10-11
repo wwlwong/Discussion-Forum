@@ -3,7 +3,9 @@ import { Route, Routes } from "react-router-dom";
 import Navigation from "./components/Navigation/Navigation";
 import Home from "./components/Home/Home";
 import "./App.css";
-import Authentication from "./components/Authentication/Authentication";
+import Login from "./components/Login/Login";
+import Signup from "./components/Signup/Signup";
+import PostContainer from "./components/PostContainer/PostContainer";
 import NewPostForm from "./components/NewPostForm/NewPostForm";
 import PostDetail from "./components/PostDetail/PostDetail";
 
@@ -12,8 +14,19 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    fetch("/post")
+      .then((res) => res.json())
+      .then((data) => setPost(data));
     // fetchUser()
     // fetchProductions()
+  }, []);
+
+  useEffect(() => {
+    fetch(`/check_session`).then((res) => {
+      if (res.ok) {
+        res.json().then((user) => setUser(user));
+      }
+    });
   }, []);
 
   const fetchPost = () => {
@@ -49,7 +62,7 @@ function App() {
           path={"/post/new"}
           element={
             <div>
-              <NewPostForm addPost={addPost} />
+              <NewPostForm addPost={addPost} user={user} />
             </div>
           }
         />
@@ -58,7 +71,7 @@ function App() {
           path={"/signup"}
           element={
             <div>
-              <Signup updateUser={updateUser}/>
+              <Signup user={user} updateUser={updateUser} />
             </div>
           }
         />
@@ -66,7 +79,15 @@ function App() {
           path={"/login"}
           element={
             <div>
-              <Login updateUser={updateUser}/>
+              <Login user={user} updateUser={updateUser}/>
+            </div>
+          }
+        />
+        <Route
+          path={"/post"}
+          element={
+            <div>
+              <PostContainer post={post} />
             </div>
           }
         />
@@ -74,7 +95,7 @@ function App() {
           path={"/"}
           element={
             <div>
-              <Home post={post} />
+              <Home />
             </div>
           }
         />
