@@ -33,7 +33,7 @@ const NewPostForm = ({ addPost }) => {
       if (res.ok) {
         res.json().then((post) => {
           addPost(post);
-          history(`/post/${post.id}`);
+          history.push(`/post/${post.id}`);
         });
       }
     });
